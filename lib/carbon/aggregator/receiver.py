@@ -1,9 +1,9 @@
 from carbon.instrumentation import increment
 from carbon.aggregator.rules import RuleManager
 from carbon.aggregator.buffers import BufferManager
+from carbon.conf import settings
 from carbon.rewrite import RewriteRuleManager
 from carbon import events
-
 
 def process(metric, datapoint):
   increment('datapointsReceived')
@@ -22,8 +22,9 @@ def process(metric, datapoint):
 
     buffer.input(datapoint)
 
-  for rule in RewriteRuleManager.postRules:
-    metric = rule.apply(metric)
+  if len(aggregate_metrics) == 0 or not settings['AGGREGATION_SUPPRESS_ORIGINAL']:
+    for rule in RewriteRuleManager.postRules:
+      metric = rule.apply(metric)
 
-  if metric not in aggregate_metrics:
-    events.metricGenerated(metric, datapoint)
+    if metric not in aggregate_metrics:
+      events.metricGenerated(metric, datapoint)

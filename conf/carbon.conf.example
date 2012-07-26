@@ -294,6 +294,11 @@ MAX_DATAPOINTS_PER_MESSAGE = 500
 # the past MAX_AGGREGATION_INTERVALS * intervalSize seconds.
 MAX_AGGREGATION_INTERVALS = 5
 
+# Set this to True to prevent unaggregated metrics from passing through
+# the aggregator. The default is to allow the original metric to pass
+# through, after modification by rewrite rules, if there are any.
+# AGGREGATION_SUPPRESS_ORIGINAL = False
+
 # Set this to True to enable whitelisting and blacklisting of metrics in
 # CONF_DIR/whitelist and CONF_DIR/blacklist. If the whitelist is missing or
 # empty, all metrics will pass through
