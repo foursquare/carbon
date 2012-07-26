@@ -28,7 +28,7 @@ def process(metric, datapoint):
 
     buffer.input(datapoint)
 
-  if not settings['AGGREGATION_SUPPRESS_ORIGINAL']:
+  if len(aggregate_metrics) == 0 or not settings['AGGREGATION_SUPPRESS_ORIGINAL']:
     for rule in RewriteRuleManager.postRules:
       metric = rule.apply(metric)
 
