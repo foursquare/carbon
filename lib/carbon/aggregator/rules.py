@@ -8,13 +8,14 @@ from carbon.aggregator.buffers import BufferManager
 
 class RuleManager:
   def __init__(self):
-    self.rules = []
+    self.clear()
     self.rules_file = None
     self.read_task = LoopingCall(self.read_rules)
     self.rules_last_read = 0.0
 
   def clear(self):
     self.rules = []
+    self.cache = {}
 
   def read_from(self, rules_file):
     self.rules_file = rules_file
@@ -63,6 +64,24 @@ class RuleManager:
       log.err("Failed to parse line: %s" % line)
       raise
 
+  # return a list of (rule, result) tuples for a metric
+  def get_aggregate_metrics(self, metric_path):
+    if not self.rules:
+      return []
+    try:
+      return self.cache[metric_path]
+    except KeyError:
+      results = []
+      for rule in self.rules:
+        result = rule.get_aggregate_metric(metric_path)
+        if result != None:
+          results.append((rule, result))
+      if results:
+        self.cache[metric_path] = results
+      else:
+        self.cache[metric_path] = ()  # use immutable tuple singleton
+
+      return results
 
 class AggregationRule:
   def __init__(self, input_pattern, output_pattern, method, frequency):
@@ -77,12 +96,8 @@ class AggregationRule:
     self.aggregation_func = AGGREGATION_METHODS[method]
     self.build_regex()
     self.build_template()
-    self.cache = {}
 
   def get_aggregate_metric(self, metric_path):
-    if metric_path in self.cache:
-      return self.cache[metric_path]
-
     match = self.regex.match(metric_path)
     result = None
 
@@ -93,7 +108,6 @@ class AggregationRule:
       except:
         log.err("Failed to interpolate template %s with fields %s" % (self.output_template, extracted_fields))
 
-    self.cache[metric_path] = result
     return result
 
   def build_regex(self):

@@ -98,12 +98,8 @@ class AggregatedConsistentHashingRouter(DatapointRouter):
   def getDestinations(self, key):
     # resolve metric to aggregate forms
     resolved_metrics = []
-    for rule in self.agg_rules_manager.rules:
-      aggregate_metric = rule.get_aggregate_metric(key)
-      if aggregate_metric is None:
-        continue
-      else:
-        resolved_metrics.append(aggregate_metric)
+    for (rule, aggregate_metric) in self.agg_rules_manager.get_aggregate_metrics(key):
+      resolved_metrics.append(aggregate_metric)
 
     # if the metric will not be aggregated, send it raw
     # (will pass through aggregation)

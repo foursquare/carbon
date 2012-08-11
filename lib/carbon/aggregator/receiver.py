@@ -13,14 +13,8 @@ def process(metric, datapoint):
 
   aggregate_metrics = []
 
-  for rule in RuleManager.rules:
-    aggregate_metric = rule.get_aggregate_metric(metric)
-
-    if aggregate_metric is None:
-      continue
-    else:
-      aggregate_metrics.append(aggregate_metric)
-
+  for (rule, aggregate_metric) in RuleManager.get_aggregate_metrics(metric):
+    aggregate_metrics.append(aggregate_metric)
     buffer = BufferManager.get_buffer(aggregate_metric)
 
     if not buffer.configured:
