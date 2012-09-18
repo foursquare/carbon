@@ -3,7 +3,19 @@ import re
 from os.path import exists, getmtime
 from twisted.internet.task import LoopingCall
 from carbon import log
+from carbon.conf import settings
 from carbon.aggregator.buffers import BufferManager
+
+if settings.AGGREGATION_RULES_CACHE_SIZE != float('inf'):
+  try:
+    import ordereddict
+    USE_LRU_RULES_CACHE = True
+  except ImportError:
+    log.err("Failed to import ordereddict (needed to limit AGGREGATION_RULES_CACHE_SIZE)")
+    USE_LRU_RULES_CACHE = False
+else:
+  USE_LRU_RULES_CACHE = False
+
 
 
 class RuleManager:
@@ -14,8 +26,12 @@ class RuleManager:
     self.clear()
 
   def clear(self):
+    if USE_LRU_RULES_CACHE:
+      self.cache = ordereddict.OrderedDict()
+      self.cache_max_size = int(settings.AGGREGATION_RULES_CACHE_SIZE)
+    else:
+      self.cache = {}
     self.rules = []
-    self.cache = {}
 
   def read_from(self, rules_file):
     self.rules_file = rules_file
@@ -67,13 +83,14 @@ class RuleManager:
   # return a list of (rule, result) tuples for a metric
   def get_aggregate_metrics(self, metric_path):
     if not self.rules:
-      return []
+      return ()
     try:
-      results = self.cache[metric_path]
-      if results == None:
-        return []
-      else:
+      if USE_LRU_RULES_CACHE:
+        results = self.cache.pop(metric_path)
+        self.cache[metric_path] = results
         return results
+      else:
+        return self.cache[metric_path]
     except KeyError:
       results = []
       for rule in self.rules:
@@ -83,7 +100,14 @@ class RuleManager:
       if results:
         self.cache[metric_path] = results
       else:
-        self.cache[metric_path] = None
+        self.cache[metric_path] = ()  # use immutable tuple singleton
+      if USE_LRU_RULES_CACHE:
+        while len(self.cache) > self.cache_max_size:
+          try:
+            self.cache.popitem(False)
+          except KeyError:
+            pass
+
       return results 
 
 class AggregationRule:
