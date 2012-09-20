@@ -100,6 +100,7 @@ class AggregatedConsistentHashingRouter(DatapointRouter):
     resolved_metrics = []
     for (rule, aggregate_metric) in self.agg_rules_manager.get_aggregate_metrics(key):
       resolved_metrics.append(aggregate_metric)
+      break
 
     # if the metric will not be aggregated, send it raw
     # (will pass through aggregation)
