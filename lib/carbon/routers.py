@@ -41,10 +41,10 @@ class RelayRulesRouter(DatapointRouter):
 
 
 class ConsistentHashingRouter(DatapointRouter):
-  def __init__(self, replication_factor=1):
+  def __init__(self, replication_factor=1, hash_type=None):
     self.replication_factor = int(replication_factor)
     self.instance_ports = {} # { (server, instance) : port }
-    self.ring = ConsistentHashRing([])
+    self.ring = ConsistentHashRing([], hash_type=hash_type)
 
   def addDestination(self, destination):
     (server, port, instance) = destination
@@ -88,8 +88,8 @@ class ConsistentHashingRouter(DatapointRouter):
     self.setKeyFunction(keyfunc)
 
 class AggregatedConsistentHashingRouter(DatapointRouter):
-  def __init__(self, agg_rules_manager, replication_factor=1):
-    self.hash_router = ConsistentHashingRouter(replication_factor)
+  def __init__(self, agg_rules_manager, replication_factor=1, hash_type=None):
+    self.hash_router = ConsistentHashingRouter(replication_factor, hash_type=hash_type)
     self.agg_rules_manager = agg_rules_manager
 
   def addDestination(self, destination):

@@ -44,6 +44,7 @@ from carbon import log, events
 
 option_parser = OptionParser(usage="%prog [options] <host:port:instance> <host:port:instance> ...")
 option_parser.add_option('--debug', action='store_true', help="Log debug info to stdout")
+option_parser.add_option('--hashtype', default='md5', help="Type of hash")
 option_parser.add_option('--keyfunc', help="Use a custom key function (path/to/module.py:myFunc)")
 option_parser.add_option('--replication', type='int', default=1, help='Replication factor')
 option_parser.add_option('--routing', default='consistent-hashing',
@@ -81,7 +82,7 @@ if options.debug:
   defer.setDebugging(True)
 
 if options.routing == 'consistent-hashing':
-  router = ConsistentHashingRouter(options.replication)
+  router = ConsistentHashingRouter(options.replication, hash_type=options.hashtype)
 elif options.routing == 'relay':
   if exists(options.relayrules):
     router = RelayRulesRouter(options.relayrules)

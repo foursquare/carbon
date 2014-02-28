@@ -342,6 +342,7 @@ class CarbonAggregatorOptions(CarbonCacheOptions):
     optParameters = [
         ["rules", "", None, "Use the given aggregation rules file."],
         ["rewrite-rules", "", None, "Use the given rewrite rules file."],
+        ["hash-type", "", None, "Type of hashing to use for consistent hashing"],
         ] + CarbonCacheOptions.optParameters
 
     def postOptions(self):
@@ -361,6 +362,7 @@ class CarbonRelayOptions(CarbonCacheOptions):
     optParameters = [
         ["rules", "", None, "Use the given relay rules file."],
         ["aggregation-rules", "", None, "Use the given aggregation rules file."],
+        ["hash-type", "", None, "Type of hashing to use for consistent hashing"],
         ] + CarbonCacheOptions.optParameters
 
     def postOptions(self):
@@ -368,6 +370,10 @@ class CarbonRelayOptions(CarbonCacheOptions):
         if self["rules"] is None:
             self["rules"] = join(settings["CONF_DIR"], "relay-rules.conf")
         settings["relay-rules"] = self["rules"]
+
+        if self["hash-type"] is None:
+            self["hash-type"] = "md5"
+        settings["hash-type"] = self["hash-type"]
 
         if self["aggregation-rules"] is None:
           self["aggregation-rules"] = join(settings["CONF_DIR"], "aggregation-rules.conf")
