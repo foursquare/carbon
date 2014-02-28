@@ -3,20 +3,36 @@ try:
 except ImportError:
   from md5 import md5
 import bisect
+from binascii import crc32
 
+SMALL_HASH_MAX = 65535
+
+def md5_key(key):
+    big_hash = md5( str(key) ).hexdigest()
+    return int(big_hash[:4], 16)
 
 class ConsistentHashRing:
-  def __init__(self, nodes, replica_count=100):
+  def __init__(self, nodes, replica_count=100, hash_type=None):
     self.ring = []
     self.nodes = set()
     self.replica_count = replica_count
+    self.hash_type = hash_type
+
     for node in nodes:
       self.add_node(node)
 
+    # Precompute hash function
+    if self.hash_type in (None, 'md5'):
+        self.hash_function = md5_key
+    elif self.hash_type == 'crc32':
+        # The md5 is dropped into the range of small_hash_max. Let's
+        # make sure crc is too
+        self.hash_function = lambda key : (crc32(key) % SMALL_HASH_MAX)
+    else:
+        raise Exception('Unsupported hash type: %s' % self.hash_type)
+
   def compute_ring_position(self, key):
-    big_hash = md5( str(key) ).hexdigest()
-    small_hash = int(big_hash[:4], 16)
-    return small_hash
+    return self.hash_function(key)
 
   def add_node(self, node):
     self.nodes.add(node)
