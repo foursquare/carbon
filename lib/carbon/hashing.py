@@ -5,8 +5,6 @@ except ImportError:
 import bisect
 from binascii import crc32
 
-SMALL_HASH_MAX = 65535
-
 def md5_key(key):
     big_hash = md5( str(key) ).hexdigest()
     return int(big_hash[:4], 16)
@@ -27,7 +25,7 @@ class ConsistentHashRing:
     elif self.hash_type == 'crc32':
         # The md5 is dropped into the range of small_hash_max. Let's
         # make sure crc is too
-        self.hash_function = lambda key : (crc32(key) % SMALL_HASH_MAX)
+        self.hash_function = lambda key : (crc32(key) & 0xffff)
     else:
         raise Exception('Unsupported hash type: %s' % self.hash_type)
 
