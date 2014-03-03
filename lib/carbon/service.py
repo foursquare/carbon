@@ -177,7 +177,7 @@ def createRelayService(config):
     root_service = createBaseService(config)
 
     # Configure application components
-    hash_type = settings["hash-type"]
+    hash_type = settings.HASH_TYPE
     if settings.RELAY_METHOD == 'rules':
       router = RelayRulesRouter(settings["relay-rules"])
     elif settings.RELAY_METHOD == 'consistent-hashing':

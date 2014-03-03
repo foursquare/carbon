@@ -60,6 +60,7 @@ defaults = dict(
   MANHOLE_USER="",
   MANHOLE_PUBLIC_KEY="",
   RELAY_METHOD='rules',
+  HASH_TYPE='md5',
   REPLICATION_FACTOR=1,
   DESTINATIONS=[],
   USE_FLOW_CONTROL=True,
@@ -342,7 +343,6 @@ class CarbonAggregatorOptions(CarbonCacheOptions):
     optParameters = [
         ["rules", "", None, "Use the given aggregation rules file."],
         ["rewrite-rules", "", None, "Use the given rewrite rules file."],
-        ["hash-type", "", None, "Type of hashing to use for consistent hashing"],
         ] + CarbonCacheOptions.optParameters
 
     def postOptions(self):
@@ -362,7 +362,6 @@ class CarbonRelayOptions(CarbonCacheOptions):
     optParameters = [
         ["rules", "", None, "Use the given relay rules file."],
         ["aggregation-rules", "", None, "Use the given aggregation rules file."],
-        ["hash-type", "", None, "Type of hashing to use for consistent hashing"],
         ] + CarbonCacheOptions.optParameters
 
     def postOptions(self):
@@ -371,9 +370,10 @@ class CarbonRelayOptions(CarbonCacheOptions):
             self["rules"] = join(settings["CONF_DIR"], "relay-rules.conf")
         settings["relay-rules"] = self["rules"]
 
-        if self["hash-type"] is None:
-            self["hash-type"] = "md5"
-        settings["hash-type"] = self["hash-type"]
+        if settings["HASH_TYPE"] not in ("md5", "crc32"):
+          print ("In carbon.conf, HASH_TYPE must be either 'md5'  'crc32'.  Invalid value: '%s'" %
+            settings.HASH_TYPE)
+          sys.exit(1)
 
         if self["aggregation-rules"] is None:
           self["aggregation-rules"] = join(settings["CONF_DIR"], "aggregation-rules.conf")
