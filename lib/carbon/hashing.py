@@ -23,7 +23,7 @@ class ConsistentHashRing:
     if self.hash_type in (None, 'md5'):
         self.hash_function = md5_key
     elif self.hash_type == 'crc32':
-        # The md5 is dropped into the range of small_hash_max. Let's
+        # The md5 is dropped into the range of 0xffff. Let's
         # make sure crc is too
         self.hash_function = lambda key : (crc32(key) & 0xffff)
     else:
