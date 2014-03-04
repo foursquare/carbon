@@ -26,6 +26,10 @@ class ConsistentHashRing:
         # The md5 is dropped into the range of 0xffff. Let's
         # make sure crc is too
         self.hash_function = lambda key : (crc32(key) & 0xffff)
+    elif self.hash_type == 'hash':
+        # The md5 is dropped into the range of 0xffff. Let's
+        # make sure crc is too
+        self.hash_function = lambda key : (hash(key) & 0xffff)
     else:
         raise Exception('Unsupported hash type: %s' % self.hash_type)
 
