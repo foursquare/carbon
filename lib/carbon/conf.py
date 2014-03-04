@@ -370,7 +370,7 @@ class CarbonRelayOptions(CarbonCacheOptions):
             self["rules"] = join(settings["CONF_DIR"], "relay-rules.conf")
         settings["relay-rules"] = self["rules"]
 
-        if settings["HASH_TYPE"] not in ("md5", "crc32", "hash"):
+        if settings["HASH_TYPE"] not in ("md5", "crc32", "crc16", "hash32", "hash16"):
           print ("In carbon.conf, HASH_TYPE must be either 'md5'  'crc32'.  Invalid value: '%s'" %
             settings.HASH_TYPE)
           sys.exit(1)

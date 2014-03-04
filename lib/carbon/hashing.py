@@ -22,14 +22,18 @@ class ConsistentHashRing:
     # Precompute hash function
     if self.hash_type in (None, 'md5'):
         self.hash_function = md5_key
-    elif self.hash_type == 'crc32':
+    elif self.hash_type == 'crc16':
         # The md5 is dropped into the range of 0xffff. Let's
         # make sure crc is too
         self.hash_function = lambda key : (crc32(key) & 0xffff)
-    elif self.hash_type == 'hash':
+    elif self.hash_type == 'hash16':
         # The md5 is dropped into the range of 0xffff. Let's
-        # make sure crc is too
+        # make sure hash is too
         self.hash_function = lambda key : (hash(key) & 0xffff)
+    elif self.hash_type == 'crc32':
+        self.hash_function = lambda key : (crc32(key) & 0xffffffff)
+    elif self.hash_type == 'hash32':
+        self.hash_function = lambda key : (hash(key) & 0xffffffff)
     else:
         raise Exception('Unsupported hash type: %s' % self.hash_type)
 
